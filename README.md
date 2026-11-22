@@ -1,7 +1,7 @@
 # Wax64
 "Wax64" is an experimental x86_64 Wasm emulator based on Jart/Blink and built on the @wasmer/sdk. It features an experimental "Hot-block Wasm JIT"—inspired by CheerpX—and supports `fork()` through the use of WASIX. It is capable of launching a Busybox environment via xterm_min.js. The project name is derived from Box64.
 ## How to use
-Obtain the `wasmer-sdk` and place it in the same directory as `Wax64.html` and `sw.js`; for example:
+Obtain `wasmer-sdk` and place it in the same directory as `Wax64.html` and `sw.js`. <sub>You might find the number of files to be quite small, but that is because many of the files used are statically linked within `Wax64.html`.</sub> Example:
 ```bash
 npm install --no-save @wasmer/sdk@0.19.1
 mkdir -p wasmer-sdk
