@@ -159,6 +159,24 @@ if "WasmJitReset();" not in src:
     print("Patched Fork() WasmJitReset in blink/syscall.c")
 
 
+if "WasmJitInvalidateRange" not in src:
+    src = src.replace(
+        "  rc = ProtectVirtual(m->system, addr, size, prot, false);\n  unassert(CheckMemoryInvariants(m->system));\n  UNLOCK(&m->system->mmap_lock);\n  END_NO_PAGE_FAULTS;\n  return rc;",
+        "  rc = ProtectVirtual(m->system, addr, size, prot, false);\n  unassert(CheckMemoryInvariants(m->system));\n  UNLOCK(&m->system->mmap_lock);\n  END_NO_PAGE_FAULTS;\n#ifdef BLINK_WASM_JIT\n  if (rc == 0) {\n    extern void WasmJitInvalidateRange(u64, u64);\n    WasmJitInvalidateRange((u64)addr, size);\n  }\n#endif\n  return rc;",
+        1,
+    )
+    src = src.replace(
+        "  rc = FreeVirtual(m->system, virt, size);\n  unassert(CheckMemoryInvariants(m->system));\n  UNLOCK(&m->system->mmap_lock);\n  END_NO_PAGE_FAULTS;\n  return rc;",
+        "  rc = FreeVirtual(m->system, virt, size);\n  unassert(CheckMemoryInvariants(m->system));\n  UNLOCK(&m->system->mmap_lock);\n  END_NO_PAGE_FAULTS;\n#ifdef BLINK_WASM_JIT\n  if (rc == 0) {\n    extern void WasmJitInvalidateRange(u64, u64);\n    WasmJitInvalidateRange((u64)virt, size);\n  }\n#endif\n  return rc;",
+        1,
+    )
+    src = src.replace(
+        "  return rc;\n}\n#endif\n\nstatic int SysDup2",
+        "#ifdef BLINK_WASM_JIT\n  if (rc != -1) {\n    extern void WasmJitInvalidateRange(u64, u64);\n    WasmJitInvalidateRange((u64)rc, size);\n  }\n#endif\n  return rc;\n}\n#endif\n\nstatic int SysDup2",
+        1,
+    )
+    print("Patched SysMprotect/SysMunmap/SysMmap WasmJitInvalidateRange in blink/syscall.c")
+
 sc.write_text(src)
 
 bc = Path("blink/blink.c")
