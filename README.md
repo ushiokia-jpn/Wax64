@@ -38,6 +38,6 @@ For cross-origin isolation (`SharedArrayBuffer` support), serve the directory us
 python3 -m http.server 8080 --directory /path/to/wax64/dist
 ```
 
-## Demo image
+## Demo image(Chromium, localhost)
 
 <img width="1360" height="768" alt="Wax64 Demo" src="https://github.com/user-attachments/assets/e6f760ec-ed59-47a0-a3df-a59989cc8edc" />
