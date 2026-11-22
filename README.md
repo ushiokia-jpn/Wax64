@@ -1,19 +1,43 @@
-
 # Wax64
-"Wax64" is an experimental x86_64 Wasm emulator based on Jart/Blink and built on the @wasmer/sdk. It features an experimental "Hot-block Wasm JIT"—inspired by CheerpX—and supports `fork()` through the use of WASIX. It is capable of launching a Busybox environment via xterm_min.js. The project name is derived from Box64.
+
+**Wax64** is an experimental x86_64 Wasm emulator based on [Jart/Blink](https://github.com) and built on `@wasmer/sdk`. It features an experimental "Hot-block Wasm JIT"—inspired by CheerpX—and supports `fork()` through the use of WASIX. It launches a Busybox environment via `xterm_min.js`. The project name is derived from Box64.
+
+## Architecture
+
+Wax64 runs x86_64 Linux binaries in the browser by combining an emulator core, a dynamic WebAssembly JIT, and WASIX process virtualization.
+
+### 1. Tiered Wasm-JIT (`wasm_jit.c`)
+* **Tier 1 & 2**: Uses `jart/blink` to profile hot code and compiles x86_64 blocks directly into raw WebAssembly bytecode without heavy dependencies like LLVM or Binaryen.
+* **Dispatch & Caching**: Utilizes Wasm `br_table` for internal branching and caches all 16 GPRs and CPU flags in Wasm locals during execution.
+
+### 2. Memory & Cache Optimization
+* **Inline Software TLB**: Translates guest virtual addresses via separate read/write TLBs (`g_tlb_r` / `g_tlb_w`) to `SharedArrayBuffer` pointers using Wasm load/store instructions.
+* **LRU Cache**: Employs a 4-way set-associative cache with automatic invalidation on memory calls (`mmap`, `munmap`, `mprotect`, `fork()`).
+
+### 3. True `fork()` & Persistence
+* **WASIX**: Built with `wasixcc` and `@wasmer/sdk` over `SharedArrayBuffer` and Web Workers to support real POSIX `fork()` and `execve()` in the browser.
+* **OPFS Storage**: Connects the guest `/workspace` directory to the browser's Origin Private File System (OPFS) for persistence.
+
 ## How to use
-Obtain `wasmer-sdk` and place it in the same directory as `Wax64.html` and `sw.js`. 
-> (You might find the number of files to be quite small, but that is because many of the files used are statically linked within `Wax64.html`.)
+
+Obtain `@wasmer/sdk` and place it in the same directory as `wax64.html` and `sw.js`.
+
+> **Note:** You might find the number of files in this repository quite small—this is because many of the required assets are statically linked within `wax64.html`.
 
 Example:
+
 ```bash
 npm install --no-save @wasmer/sdk@0.19.1
 mkdir -p wasmer-sdk
 cp -r node_modules/@wasmer/sdk/dist /path/to/wax64/dist
 ```
-For the purpose of cross-origin-isolation, it is recommended to set up a simple server using a tool like Python. An example is provided below:
-```python3
+
+For cross-origin isolation (`SharedArrayBuffer` support), serve the directory using a local HTTP server such as Python:
+
+```bash
 python3 -m http.server 8080 --directory /path/to/wax64/dist
 ```
-# Demo image
-<img width="1360" height="768" alt="20261122_152157_grim" src="https://github.com/user-attachments/assets/e6f760ec-ed59-47a0-a3df-a59989cc8edc" />
+
+## Demo image
+
+<img width="1360" height="768" alt="Wax64 Demo" src="https://github.com/user-attachments/assets/e6f760ec-ed59-47a0-a3df-a59989cc8edc" />
