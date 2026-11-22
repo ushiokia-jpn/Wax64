@@ -3,6 +3,7 @@
 ## How to use
 Obtain `wasmer-sdk` and place it in the same directory as `Wax64.html` and `sw.js`. 
 > (You might find the number of files to be quite small, but that is because many of the files used are statically linked within `Wax64.html`.)
+
 Example:
 ```bash
 npm install --no-save @wasmer/sdk@0.19.1
