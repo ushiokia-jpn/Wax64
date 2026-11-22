@@ -1,6 +1,6 @@
 # Wax64
 
-**Wax64** is an experimental x86_64 Wasm emulator based on [Jart/Blink](https://github.com) and built on `@wasmer/sdk`. It features an experimental "Hot-block Wasm JIT"—inspired by CheerpX—and supports `fork()` through the use of WASIX. It launches a Busybox environment via `xterm_min.js`. The project name is derived from Box64.
+**Wax64** is an experimental x86_64 Wasm emulator based on [Jart/Blink](https://github.com/jart/blink) and built on `@wasmer/sdk`. It features an experimental "Hot-block Wasm JIT"—inspired by CheerpX—and supports `fork()` through the use of WASIX. It launches a Busybox environment via `xterm_min.js`. The project name is derived from Box64.
 
 ## Architecture
 
