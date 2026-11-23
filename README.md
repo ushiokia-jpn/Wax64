@@ -29,13 +29,13 @@ Example:
 ```bash
 npm install --no-save @wasmer/sdk@0.19.1
 mkdir -p wasmer-sdk
-cp -r node_modules/@wasmer/sdk /path/to/wax64/wasmer-sdk
+cp -r node_modules/@wasmer/sdk /path/to/blink/dist/wasmer-sdk
 ```
 
 For cross-origin isolation (`SharedArrayBuffer` support), serve the directory using a local HTTP server such as Python:
 
 ```bash
-python3 -m http.server 8080 --directory /path/to/wax64/dist
+python3 -m http.server 8080 --directory /path/to/blink/dist
 ```
 
 ## Demo image(Chromium, localhost)
