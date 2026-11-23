@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# WASIX build script for jart/blink (Minix64) using wasixcc + CheerpX-style Wasm-JIT (Fork/Exec, no X11)
+# WASIX build script for jart/blink (Wax64) using wasixcc + CheerpX-style Wasm-JIT (Fork/Exec, no X11)
 # Usage: INITIAL_MEMORY_BYTES=67108864 MAX_MEMORY_BYTES=2147483648 ./build_blink_wasix.sh [blink_dir]
 
 set -euo pipefail
@@ -175,7 +175,17 @@ if "WasmJitInvalidateRange" not in src:
         "#ifdef BLINK_WASM_JIT\n  if (rc != -1) {\n    extern void WasmJitInvalidateRange(u64, u64);\n    WasmJitInvalidateRange((u64)rc, size);\n  }\n#endif\n  return rc;\n}\n#endif\n\nstatic int SysDup2",
         1,
     )
-    print("Patched SysMprotect/SysMunmap/SysMmap WasmJitInvalidateRange in blink/syscall.c")
+    src = src.replace(
+        "  LOCK(&m->system->exec_lock);\n  ExecveBlink(m, prog, argv, envp);",
+        "  LOCK(&m->system->exec_lock);\n#ifdef BLINK_WASM_JIT\n  {\n    extern void WasmJitReset(void);\n    WasmJitReset();\n  }\n#endif\n  ExecveBlink(m, prog, argv, envp);",
+        1,
+    )
+    src = src.replace(
+        "      if (FreeVirtual(m->system, addr, m->system->brk - addr) != -1) {\n        m->system->brk = addr;\n      }",
+        "      if (FreeVirtual(m->system, addr, m->system->brk - addr) != -1) {\n#ifdef BLINK_WASM_JIT\n        extern void WasmJitInvalidateRange(u64, u64);\n        WasmJitInvalidateRange((u64)addr, (u64)(m->system->brk - addr));\n#endif\n        m->system->brk = addr;\n      }",
+        1,
+    )
+    print("Patched SysMprotect/SysMunmap/SysMmap/SysExecve/SysBrk JIT hooks in blink/syscall.c")
 
 sc.write_text(src)
 
@@ -274,4 +284,4 @@ WASIXCC_RUN_WASM_OPT=yes make -j"$JOBS" o//blink/blink
 mkdir -p dist-wasix
 cp o//blink/blink dist-wasix/blink.wasm
 echo ""
-echo "Minix64 WASIX Wasm-JIT build complete: $WORKDIR/dist-wasix/blink.wasm"
+echo "Wax64 WASIX Wasm-JIT build complete: $WORKDIR/dist-wasix/blink.wasm"
